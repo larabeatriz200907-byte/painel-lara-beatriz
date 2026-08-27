@@ -179,7 +179,7 @@ ${Number(c.setup_etapa||1)<7
 <br>🏁 Finaliza: <b>${fmt(c.data_setup_final)}</b>
 <br>➡️ 30D: <b>${fmt(c.data_30d_inicio)}</b>
 `
-    p==='30D'?`📅 Entrada: <b>${fmt(i.d30)}</b><br>⏳ <b>Dia ${i.dd} de 30 úteis</b><br>🏁 Finaliza: <b>${fmt(i.de)}</b><br>➡️ Recorrente: <b>${fmt(i.re)}</b>`:
+    :p==='30D'?`📅 Entrada: <b>${fmt(i.d30)}</b><br>⏳ <b>Dia ${i.dd} de 30 úteis</b><br>🏁 Finaliza: <b>${fmt(i.de)}</b><br>➡️ Recorrente: <b>${fmt(i.re)}</b>`:
     `🟢 Recorrente desde: <b>${fmt(i.re)}</b><br>🔄 Próxima renovação: <b>${fmt(next(c))}</b>`;
   return `<div class="item" onclick="openClient('${c.id}')"><strong>${esc(c.nome)}</strong><div class="muted">${esc(c.servico||'')}</div><div style="line-height:1.8;margin-top:7px">${body}</div><button class="btn soft" style="margin-top:8px" onclick="event.stopPropagation();clientModal('${c.id}')">✏️ Editar</button></div>`
 }
