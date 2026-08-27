@@ -113,7 +113,7 @@ function clients(){
   else a=a.filter(c=>c.status!=='Cancelado');
   $('clients').innerHTML=a.map(c=>{
     let p=phase(c),i=info(c),cl=p==='Setup'?'setup':p==='30D'?'d30':p==='Recorrente'?'rec':'red';
-    let detail=!i?'⚠️ Data de início não cadastrada':p==='Setup'?``📌 Etapa ${Number(c.setup_etapa||1)}/7 — ${setupFases[Number(c.setup_etapa||1)-1]}`:p==='30D'?`⏳ Dia ${i.dd}/30 • 🏁 ${fmt(i.de)}`:`🟢 Desde ${fmt(i.re)}`;
+   let detail = !i ? '⚠️ Data de início não cadastrada' : p === 'Setup' ? '📌 Etapa ' + Number(c.setup_etapa || 1) + '/7 - ' + setupFases[Number(c.setup_etapa || 1) - 1] : p === '30D' ? '⏳ Dia ' + i.dd + '/30 • 🏁 ' + fmt(i.de) : '➡️ Desde ' + fmt(i.re);
    return `<div class="client" onclick="openClient('${c.id}')">
   <div class="itemtop">
     <div>
