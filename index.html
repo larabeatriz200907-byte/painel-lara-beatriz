@@ -12,6 +12,32 @@
 <section id="arquivados" class="tab hidden"><div class="section"><h2>🗃️ Arquivados</h2><div id="archives"></div></div></section></main></div><div id="modal" class="modal hidden"><div class="box"><div class="mh"><h2 id="mt"></h2><button class="close" onclick="closeM()">✕</button></div><div id="mb"></div></div></div>
 <script>
 const sb=window.supabase.createClient('https://tohcifivmfzpcsmdkjjb.supabase.co','sb_publishable_t9RUX3amKeGYZs-XeVL4Gg_3zgvDOwT');let C=[],S=[],R=[],G=[],rf='todos',gf='todos',editId=null;const $=x=>document.getElementById(x),esc=x=>String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));function d(v){
+  const setupFases = [
+  'Entrada / Organização',
+  'Briefing',
+  'Acessos',
+  'Planejamento',
+  'Criativos',
+  'Configuração',
+  'Finalização / Subida'
+];
+
+async function mudarSetupEtapa(id, etapa){
+  etapa = Math.max(1, Math.min(7, Number(etapa)));
+
+  const { error } = await sb
+    .from('clientes')
+    .update({ setup_etapa: etapa })
+    .eq('id', id);
+
+  if(error){
+    alert('Erro ao atualizar a etapa do Setup.');
+    console.error(error);
+    return;
+  }
+
+  location.reload();
+}
   if(!v)return null;
   if(v instanceof Date)return new Date(v.getFullYear(),v.getMonth(),v.getDate());
   const s=String(v).slice(0,10);
@@ -87,8 +113,40 @@ function clients(){
   else a=a.filter(c=>c.status!=='Cancelado');
   $('clients').innerHTML=a.map(c=>{
     let p=phase(c),i=info(c),cl=p==='Setup'?'setup':p==='30D'?'d30':p==='Recorrente'?'rec':'red';
-    let detail=!i?'⚠️ Data de início não cadastrada':p==='Setup'?`⏳ Dia ${i.sd}/7 • 🏁 ${fmt(i.se)}`:p==='30D'?`⏳ Dia ${i.dd}/30 • 🏁 ${fmt(i.de)}`:`🟢 Desde ${fmt(i.re)}`;
-    return `<div class="client" onclick="openClient('${c.id}')"><div class="itemtop"><div><strong>${esc(c.nome)}</strong><div class="muted">${esc(c.servico||'')}</div></div><span class="tag ${cl}">${p}</span></div><div class="muted" style="margin-top:8px">📅 Início: ${fmt(c.data_inicio)}</div><div class="muted">${detail}</div><div class="actions" style="margin-top:8px"><button class="btn soft" onclick="event.stopPropagation();clientModal('${c.id}')">✏️ Editar</button></div></div>`
+    let detail=!i?'⚠️ Data de início não cadastrada':p==='Setup'?``📌 Etapa ${Number(c.setup_etapa||1)}/7 — ${setupFases[Number(c.setup_etapa||1)-1]}`:p==='30D'?`⏳ Dia ${i.dd}/30 • 🏁 ${fmt(i.de)}`:`🟢 Desde ${fmt(i.re)}`;
+   return `<div class="client" onclick="openClient('${c.id}')">
+  <div class="itemtop">
+    <div>
+      <strong>${esc(c.nome)}</strong>
+      <div class="muted">${esc(c.servico||'')}</div>
+    </div>
+    <span class="tag ${cl}">${p}</span>
+  </div>
+
+  <div class="muted" style="margin-top:8px">
+    📅 Início: ${fmt(c.data_inicio)}
+  </div>
+
+  <div class="muted">${detail}</div>
+
+  ${p==='Setup'?`
+    <div class="actions" style="margin-top:8px">
+      ${Number(c.setup_etapa||1)>1
+        ? `<button class="btn soft" onclick="event.stopPropagation();mudarSetupEtapa('${c.id}',${Number(c.setup_etapa||1)-1})">← Voltar</button>`
+        : ''
+      }
+
+      ${Number(c.setup_etapa||1)<7
+        ? `<button class="btn" onclick="event.stopPropagation();mudarSetupEtapa('${c.id}',${Number(c.setup_etapa||1)+1})">Avançar →</button>`
+        : `<span class="muted">✅ Setup concluído</span>`
+      }
+    </div>
+  `:''}
+
+  <div class="actions" style="margin-top:8px">
+    <button class="btn soft" onclick="event.stopPropagation();clientModal('${c.id}')">✏️ Editar</button>
+  </div>
+</div>`
   }).join('')||'<div class="empty">Nenhum cliente.</div>'
 }
 function phases(){
