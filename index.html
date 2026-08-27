@@ -159,7 +159,26 @@ function phases(){
 function pc(c,p){
   let i=info(c);
   let body=!i?`⚠️ <b>Data de início não cadastrada.</b><br><span class="muted">Edite o cliente para ativar o cálculo automático.</span>`:
-    p==='Setup'?`📅 Início: <b>${fmt(c.data_inicio)}</b><br>⏳ <b>Dia ${i.sd} de 7 úteis</b><br>🏁 Finaliza: <b>${fmt(i.se)}</b><br>➡️ 30D: <b>${fmt(i.d30)}</b>`:
+p==='Setup'?`
+📅 Início: <b>${fmt(c.data_inicio)}</b><br><br>
+
+📌 <b>Etapa ${Number(c.setup_etapa||1)}/7 — ${setupFases[Number(c.setup_etapa||1)-1]}</b><br>
+
+<div style="margin-top:10px">
+${Number(c.setup_etapa||1)>1
+? `<button class="btn soft" onclick="event.stopPropagation();mudarSetupEtapa('${c.id}',${Number(c.setup_etapa||1)-1})">← Voltar</button>`
+: ''
+}
+
+${Number(c.setup_etapa||1)<7
+? `<button class="btn" onclick="event.stopPropagation();mudarSetupEtapa('${c.id}',${Number(c.setup_etapa||1)+1})">Avançar →</button>`
+: `<b>✅ Setup concluído</b>`
+}
+</div>
+
+<br>🏁 Finaliza: <b>${fmt(c.data_setup_final)}</b>
+<br>➡️ 30D: <b>${fmt(c.data_30d_inicio)}</b>
+`
     p==='30D'?`📅 Entrada: <b>${fmt(i.d30)}</b><br>⏳ <b>Dia ${i.dd} de 30 úteis</b><br>🏁 Finaliza: <b>${fmt(i.de)}</b><br>➡️ Recorrente: <b>${fmt(i.re)}</b>`:
     `🟢 Recorrente desde: <b>${fmt(i.re)}</b><br>🔄 Próxima renovação: <b>${fmt(next(c))}</b>`;
   return `<div class="item" onclick="openClient('${c.id}')"><strong>${esc(c.nome)}</strong><div class="muted">${esc(c.servico||'')}</div><div style="line-height:1.8;margin-top:7px">${body}</div><button class="btn soft" style="margin-top:8px" onclick="event.stopPropagation();clientModal('${c.id}')">✏️ Editar</button></div>`
