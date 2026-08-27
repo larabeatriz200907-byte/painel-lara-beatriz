@@ -157,31 +157,58 @@ function phases(){
   $('frlist').innerHTML=r.map(c=>pc(c,'Recorrente')).join('')||'<div class="empty">Nenhum cliente.</div>';
 }
 function pc(c,p){
-  let i=info(c);
-  let body=!i?`⚠️ <b>Data de início não cadastrada.</b><br><span class="muted">Edite o cliente para ativar o cálculo automático.</span>`:
-p==='Setup'?`
-📅 Início: <b>${fmt(c.data_inicio)}</b><br><br>
+  const i = info(c);
+  let body = '';
 
-📌 <b>Etapa ${Number(c.setup_etapa||1)}/7 — ${setupFases[Number(c.setup_etapa||1)-1]}</b><br>
+  if(!i){
+    body = `⚠️ <b>Data de início não cadastrada.</b><br>
+    <span class="muted">Edite o cliente para continuar.</span>`;
+  }
 
-<div style="margin-top:10px">
-${Number(c.setup_etapa||1)>1
-? `<button class="btn soft" onclick="event.stopPropagation();mudarSetupEtapa('${c.id}',${Number(c.setup_etapa||1)-1})">← Voltar</button>`
-: ''
-}
+  else if(p === 'Setup'){
+    const etapa = Number(c.setup_etapa || 1);
+    const nomeEtapa = setupFases[etapa - 1] || 'Entrada / Organização';
 
-${Number(c.setup_etapa||1)<7
-? `<button class="btn" onclick="event.stopPropagation();mudarSetupEtapa('${c.id}',${Number(c.setup_etapa||1)+1})">Avançar →</button>`
-: `<b>✅ Setup concluído</b>`
-}
-</div>
+    body = `
+      📅 Início: <b>${fmt(c.data_inicio)}</b><br><br>
 
-<br>🏁 Finaliza: <b>${fmt(c.data_setup_final)}</b>
-<br>➡️ 30D: <b>${fmt(c.data_30d_inicio)}</b>
-`
-    :p==='30D'?`📅 Entrada: <b>${fmt(i.d30)}</b><br>⏳ <b>Dia ${i.dd} de 30 úteis</b><br>🏁 Finaliza: <b>${fmt(i.de)}</b><br>➡️ Recorrente: <b>${fmt(i.re)}</b>`:
-    `🟢 Recorrente desde: <b>${fmt(i.re)}</b><br>🔄 Próxima renovação: <b>${fmt(next(c))}</b>`;
-  return `<div class="item" onclick="openClient('${c.id}')"><strong>${esc(c.nome)}</strong><div class="muted">${esc(c.servico||'')}</div><div style="line-height:1.8;margin-top:7px">${body}</div><button class="btn soft" style="margin-top:8px" onclick="event.stopPropagation();clientModal('${c.id}')">✏️ Editar</button></div>`
+      📌 <b>Etapa ${etapa}/7 — ${nomeEtapa}</b>
+
+      <div class="actions" style="margin-top:10px">
+        ${etapa > 1
+          ? `<button class="btn soft" onclick="event.stopPropagation();mudarSetupEtapa('${c.id}',${etapa-1})">← Voltar</button>`
+          : ''
+        }
+
+        ${etapa < 7
+          ? `<button class="btn" onclick="event.stopPropagation();mudarSetupEtapa('${c.id}',${etapa+1})">Avançar →</button>`
+          : `<span class="muted">✅ Setup concluído</span>`
+        }
+      </div>
+    `;
+  }
+
+  else if(p === '30D'){
+    body = `
+      📅 Entrada: <b>${fmt(i.d30)}</b><br><br>
+      ⏳ <b>Dia ${i.dd} de 30 úteis</b><br>
+      🏁 Finaliza: <b>${fmt(i.de)}</b><br>
+      ➡️ Recorrente: <b>${fmt(i.re)}</b>
+    `;
+  }
+
+  else{
+    body = `
+      🟢 Recorrente desde: <b>${fmt(i.re)}</b><br>
+      🔄 Próxima renovação: <b>${fmt(next(c))}</b>
+    `;
+  }
+
+  return `<div class="item" onclick="openClient('${c.id}')">
+    <strong>${esc(c.nome)}</strong>
+    <div class="muted">${esc(c.servico || '')}</div>
+    <div style="line-height:1.8;margin-top:8px">${body}</div>
+  </div>`;
 }
 function clientModal(id=''){editId=id||null;let c=id?C.find(x=>String(x.id)===String(id))||{}:{};$('mt').textContent=id?'Editar cliente':'Novo cliente';$('mb').innerHTML=`<div class="formgrid"><label>Nome<input id="n" value="${esc(c.nome)}"></label><label>Contato<input id="co" value="${esc(c.contato)}"></label><label>Serviço<input id="se" value="${esc(c.servico)}"></label><label>Data de início<input id="di" type="date" value="${esc(c.data_inicio)}"></label><label>Status<select id="st"><option ${c.status!=='Cancelado'?'selected':''}>Ativo</option><option ${c.status==='Cancelado'?'selected':''}>Cancelado</option></select></label><label>Google Meu Negócio<select id="gm"><option value="false" ${!c.google_meu_negocio?'selected':''}>Não</option><option value="true" ${c.google_meu_negocio?'selected':''}>Sim</option></select></label><label class="full">Sobre o cliente<textarea id="so">${esc(c.sobre)}</textarea></label><label class="full">Pendências<textarea id="pe">${esc(c.pendente)}</textarea></label><div class="full actions"><button class="btn" onclick="saveClient()">💾 Salvar</button>${id?`<button class="btn soft" onclick="archive('${id}')">🗃️ Arquivar</button><button class="btn mars" onclick="delClient('${id}')">Excluir</button>`:''}</div></div>`;$('modal').classList.remove('hidden')}
 async function existingUserId(){
